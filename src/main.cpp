@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 
 #include "SFML/Graphics.hpp"
@@ -16,18 +17,20 @@ int main() {
   window.create(sf::VideoMode(WIDTH, HEIGHT), "3D rendering", sf::Style::Close);
   window.setFramerateLimit(90);
 
+  float distance = 2.5f;
   float boxSize = 50.f;
   float boxSizeHalf = boxSize * 0.5f;
   sf::Vector2f boxPos = {WIDTH * 0.5f - boxSizeHalf, HEIGHT * 0.5f - boxSizeHalf};
 
   sf::CircleShape points[8];
   for (sf::CircleShape& p : points) {
-    p.setRadius(3.f);
-    p.setOrigin({3.f, 3.f});
+    constexpr float radius = 3.f;
+    p.setRadius(radius);
+    p.setOrigin({radius, radius});
   }
 
   // Placing dots around top-left corner
-  mat<3, 1> boxMat[8] {
+  mat<3, 1> pointsMat[8] {
     {-boxSizeHalf, -boxSizeHalf, -boxSizeHalf},
     { boxSizeHalf, -boxSizeHalf, -boxSizeHalf},
     { boxSizeHalf,  boxSizeHalf, -boxSizeHalf},
@@ -54,16 +57,20 @@ int main() {
           default:
             break;
         }
+
+      if (event.type == sf::Event::MouseWheelScrolled)
+        distance = std::max((distance + event.mouseWheelScroll.delta * 0.25f), 0.1f);
     }
 
     window.clear();
 
     for (int i = 0; i < 8; i++) {
-      boxMat[i].rotateX(angle);
-      boxMat[i].rotateY(angle);
-      boxMat[i].rotateZ(angle);
-      boxMat[i].project();
-      points[i].setPosition(sf::Vector2f(boxMat[i].m[0], boxMat[i].m[1]) + boxPos);
+      mat<3, 1> pointMat = pointsMat[i];
+      pointMat.rotateX(angle);
+      pointMat.rotateY(angle);
+      pointMat.rotateZ(angle);
+      pointMat.project(distance);
+      points[i].setPosition(sf::Vector2f(pointMat.m[0], pointMat.m[1]) + boxPos);
       window.draw(points[i]);
     }
 
@@ -81,6 +88,8 @@ int main() {
     window.draw(lines);
 
     window.display();
+
+    angle += 0.03;
   }
 
 	return 0;

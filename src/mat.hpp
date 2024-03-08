@@ -1,11 +1,11 @@
 #include <cstdio>
 #include <stdexcept>
 
-// Assuming theres only 3x3 and 3x1 matrices
 template<int R, int C>
 struct mat {
   double m[R * C];
 
+  // Assuming theres only 3x3 and 3x1 matrices
   void multiply(double rhs[]) const {
     if (C != 3)
       throw std::runtime_error("Invalid matrices shapes to multiply");
@@ -58,11 +58,11 @@ struct mat {
     rotation.multiply(m);
   }
 
-  void project() {
-    static const mat<3, 3> projection {
-      1., 0., 0.,
-      0., 1., 0.,
-      0., 0., 1.
+  void project(float d) {
+    mat<3, 3> projection {
+      d, 0., 0.,
+      0., d, 0.,
+      0., 0., d
     };
 
     projection.multiply(m);
